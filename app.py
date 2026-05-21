@@ -65,18 +65,7 @@ with tab1:
                     
                     # Show the summary markdown directly in the UI
                     st.markdown("### 📋 Meeting Summary Extracted:")
-                    # Safe check: agar summary_text na mile toh direct summary dikha dega
-# Safe check: agar summary_text na mile toh direct summary dikha dega
-summary_data = result.get("summary", {})
-summary_data = result.get("summary", {})
-if isinstance(summary_data, dict):
-if isinstance(summary_data, dict):
-st.markdown(summary_data.get("summary_text", summary_data.get("summary", "Summary extracted successfully! Check Logs.")))
-st.markdown(summary_data.get("summary_text", summary_data.get("summary", "Summary extracted successfully! Check Logs.")))
-else:
-else:
-st.markdown(str(summary_data))
-st.markdown(str(summary_data))
+                    st.markdown(result["summary"]["summary_text"])
                     
                     # Force a refresh of the total metric on next click
                     st.rerun()
