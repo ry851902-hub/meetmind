@@ -1,93 +1,126 @@
 # app.py
 # ---------------------------------------------------------------
-# FRONTEND / USER INTERFACE (UI) CODE
+# What this file does:
+#   This is the Frontend / User Interface (UI). It uses Streamlit
+#   to create a clean web dashboard that opens in your browser.
+#
+# Solo: This is the FIFTH and final file. Run it using:
+#   streamlit run app.py
 # ---------------------------------------------------------------
 
 import streamlit as st
 from main import process_meeting, get_briefing, get_meetings_list, get_memory_count
 
-# Page Setup
+# Page Configuration (Sets the browser tab title and layout)
 st.set_page_config(
     page_title="MeetMind - AI Team Memory System",
     page_icon="🧠",
     layout="wide"
 )
 
-# Header
-st.title("🧠 MeetMind Dashboard")
-st.subheader("Your AI Team Memory System — Built Solo")
+# App Header
+st.title("🧠 MeetMind")
+st.subheader("Your AI Team Memory System — Cross-Session Intelligence")
 st.markdown("---")
 
-# Sidebar for Stats
+# Sidebar for Workspace and Quick Stats
 st.sidebar.header("Workspace Settings")
-workspace_id = st.sidebar.text_input("Workspace ID", value="hackathon-team")
+workspace_id = st.sidebar.text_input("Enter Workspace ID", value="my-alpha-team", help="Change this to separate different projects or teams.")
 
 st.sidebar.markdown("---")
 st.sidebar.header("System Status")
 total_saved = get_memory_count()
-st.sidebar.metric(label="Total Saved Memories", value=total_saved)
-st.sidebar.success("Backend Connected! 🔥")
+st.sidebar.metric(label="Total Cross-Session Memories", value=total_saved)
+st.sidebar.success("Backend Connected via main.py")
 
-# Tabs
-tab1, tab2 = st.tabs(["📝 Input New Meeting", "📊 View Team Briefing & Logs"])
+# Create Two Tabs for the Dashboard
+tab1, tab2 = st.tabs(["📝 Process New Meeting", "📊 Workspace Briefing & Logs"])
 
 # ---------------------------------------------------------------
-# TAB 1: INPUT TRANSCRIPT
+# TAB 1: PROCESS NEW MEETING
 # ---------------------------------------------------------------
 with tab1:
-    st.header("Upload or Paste Meeting Transcript")
-    st.write("Paste your meeting text here to let AI extract decisions and save them.")
+    st.header("Process a New Meeting Transcript")
+    st.write("Paste your raw meeting text below to extract key takeaways and save them to team memory.")
     
-    meeting_name = st.text_input("Meeting Title", value="Week 1 — Strategy Kickoff")
-    transcript_text = st.text_area("Paste Transcript Text Here...", height=250)
+    # Input Fields
+    meeting_name = st.text_input("Meeting Title", value="Week 3 Mid-Sprint Check-in", placeholder="e.g., Week 1 Strategy Kickoff")
+    transcript_text = st.text_area("Paste Raw Transcript here...", height=250, placeholder="Sarah: Let's start...\nJohn: I will handle the backend task...")
     
-    if st.button("✨ Process & Save to Memory", type="primary"):
+    if st.button("✨ Process & Remember", type="primary"):
         if not transcript_text.strip():
-            st.error("Please enter a meeting transcript before processing.")
+            st.error("Please paste a transcript before processing!")
         else:
-            with st.spinner("AI is thinking and remembering..."):
+            with st.spinner("AI is analyzing the transcript and committing key items to memory..."):
+                # Call Function 1 from main.py
                 result = process_meeting(transcript_text, meeting_name, workspace_id)
                 
                 if result["success"]:
-                    st.success(f"🎉 Success! '{meeting_name}' saved to team memory.")
-                    st.markdown("### 📋 AI Summary Extracted:")
-                    st.markdown(result["summary"]["summary_text"])
+                    st.success(f"🎉 Success! '{meeting_name}' has been processed and safely remembered.")
+                    
+                    # Display Stats
+                    col1, col2 = st.columns(2)
+                    col1.metric("Workspace Memories", result["total_memories"])
+                    col2.metric("AI Model Used", result["model_used"])
+                    
+                    # Show the summary markdown directly in the UI
+                    st.markdown("### 📋 Meeting Summary Extracted:")
+                    # Safe check: agar summary_text na mile toh direct summary dikha dega
+# Safe check: agar summary_text na mile toh direct summary dikha dega
+summary_data = result.get("summary", {})
+summary_data = result.get("summary", {})
+if isinstance(summary_data, dict):
+if isinstance(summary_data, dict):
+st.markdown(summary_data.get("summary_text", summary_data.get("summary", "Summary extracted successfully! Check Logs.")))
+st.markdown(summary_data.get("summary_text", summary_data.get("summary", "Summary extracted successfully! Check Logs.")))
+else:
+else:
+st.markdown(str(summary_data))
+st.markdown(str(summary_data))
+                    
+                    # Force a refresh of the total metric on next click
                     st.rerun()
                 else:
-                    st.error("Something went wrong!")
+                    st.error(f"❌ Failed during step: {result.get('step_failed')}")
                     st.code(result.get("error"))
 
 # ---------------------------------------------------------------
-# TAB 2: BRIEFING LOGS
+# TAB 2: WORKSPACE BRIEFING & LOGS
 # ---------------------------------------------------------------
 with tab2:
-    st.header(f"Workspace History: `{workspace_id}`")
+    st.header(f"Workspace: `{workspace_id}`")
     
-    col1, col2 = st.columns([2, 1])
+    col_left, col_right = st.columns([2, 1])
     
-    with col1:
-        st.subheader("🚀 Generate Cross-Session Briefing")
-        st.write("This button merges all past meetings to show project progress and blockers.")
+    with col_left:
+        st.subheader("🤖 Generate Cross-Session Briefing")
+        st.write("This reads *all* past summaries for this workspace to find project changes, action items, and resolved decisions over time.")
         
-        upcoming_topic = st.text_input("Next Meeting Topic (Optional)", value="")
+        upcoming_topic = st.text_input("Next Meeting Focus (Optional)", placeholder="e.g., Discussing pricing or architecture blockages")
         
-        if st.button("🔥 Generate Magic Briefing"):
-            with st.spinner("Fetching memories and generating document..."):
+        if st.button("🚀 Generate Briefing", type="secondary"):
+            with st.spinner("Reading past history and synthesizing document..."):
+                # Call Function 2 from main.py
                 briefing_result = get_briefing(workspace_id, upcoming_topic)
                 
                 if briefing_result["success"]:
                     st.markdown("---")
                     st.markdown(briefing_result["briefing_text"])
+                    st.info(f"Generated using {briefing_result['memory_count']} past meetings.")
                 else:
-                    st.error("Briefing failed. Check if you have added meetings first!")
+                    st.error("Could not generate briefing.")
                     st.code(briefing_result.get("error"))
                     
-    with col2:
+    with col_right:
         st.subheader("🗄️ Saved Meeting Logs")
+        st.write("Meetings currently saved in this workspace:")
+        
+        # Call Function 3 from main.py
         past_meetings = get_meetings_list(workspace_id)
         
         if past_meetings:
-            for mtg in past_meetings:
-                st.info(f"📁 {mtg}")
+            for idx, mtg in enumerate(past_meetings):
+                with st.expander(f"📁 {mtg}"):
+                    st.write("Memory compiled in database.")
         else:
-            st.warning("No meetings saved in this workspace yet.")
+            st.warning("No meetings found in this workspace yet. Go to Tab 1 to add some!")
