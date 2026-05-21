@@ -1,0 +1,6 @@
+streamlit
+    streamlit
+    groq
+    groq
+    python-dotenv
+    python-dotenv
