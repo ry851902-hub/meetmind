@@ -43,7 +43,7 @@ with tab1:
     
     if st.button("✨ Process & Save to Memory", type="primary"):
         if not transcript_text.strip():
-            st.error("Bhai, pehle transcript text to daalo!")
+            st.error("Please enter a meeting transcript before processing.")
         else:
             with st.spinner("AI is thinking and remembering..."):
                 result = process_meeting(transcript_text, meeting_name, workspace_id)
